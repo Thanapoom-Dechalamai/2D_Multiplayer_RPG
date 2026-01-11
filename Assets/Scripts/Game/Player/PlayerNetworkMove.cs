@@ -99,7 +99,7 @@ namespace Game.Player
             
             _moveIntent = dir;
             
-            _player.UpdateStateMachine();
+            //_player.UpdateStateMachine();
             
             SendInputServerRpc(input);
             
@@ -115,9 +115,9 @@ namespace Game.Player
             if (Vector2.Distance(predicted.Position, serverState.Position) < 0.05f) return;
             
             _player.Rigidbody.position = serverState.Position;
-            
+
             _player.Rigidbody.linearVelocity = serverState.Velocity;
-            
+
             uint tick = serverState.Tick + 1;
             
             while (tick < _localTick)
@@ -126,10 +126,10 @@ namespace Game.Player
                 
                 _moveIntent = input.InputDirection;
                 
-                _player.UpdateStateMachine();
+                //_player.UpdateStateMachine();
                 
-                _player.ApplyLocalKinematicStep(Time.fixedDeltaTime);
-                
+                _player.ApplyMovementPhysics(Time.fixedDeltaTime);
+
                 _stateBuffer[tick % BUFFER_SIZE] = new StatePayload
                 {
                     Tick = tick,

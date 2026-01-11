@@ -36,7 +36,7 @@ namespace Game.Player
 
         public override void OnNetworkSpawn()
         {
-            if (IsServer)
+            if (IsServer || IsOwner)
             {
                 StateMachine = new CharacterStateMachine();
                 StateMachine.RegisterState(new IdleState(this, StateMachine));
@@ -51,15 +51,17 @@ namespace Game.Player
             {
                 ApplyAuthoritativePhysics(Time.fixedDeltaTime);
             }
-            else if (IsOwner)
-            {
-                ApplyPredictedPhysics(Time.fixedDeltaTime);
-            }
-            else
+            else if (!IsOwner)
             {
                 ApplyInterpolatedPhysics(Time.fixedDeltaTime);
             }
+            //else if (IsOwner)
+            //{
+            //    ApplyPredictedPhysics(Time.fixedDeltaTime);
+            //}
         }
+
+        // ========== Public APIs ========== 
 
         public void ApplyMovement(Vector2 velocity)
         {
@@ -73,8 +75,10 @@ namespace Game.Player
 
         public void UpdateStateMachine()
         {
-            if (!IsServer) return;
-            StateMachine?.Update();
+            if (IsServer || IsOwner)
+            {
+                StateMachine?.Update();
+            }
         }
 
         public void ApplyServerState(Vector2 position, Vector2 velocity)
@@ -84,32 +88,23 @@ namespace Game.Player
             _hasServerState = true;
         }
 
-        public void ApplyLocalKinematicStep(float deltaTime)
+        public void ApplyMovementPhysics(float deltaTime)
         {
             _externalVelocity = Vector2.Lerp(_externalVelocity, Vector2.zero, _externalDecay * deltaTime);
-            
+
             Vector2 velocity = _movementVelocity + _externalVelocity;
             Vector2 newPos = Rigidbody.position + velocity * deltaTime;
-            
+
             Rigidbody.position = newPos;
             Rigidbody.linearVelocity = velocity;
-        } 
+        }
 
         // ========== Internal ========== 
+
         private void ApplyAuthoritativePhysics(float deltaTime)
         {
             _externalVelocity = Vector2.Lerp(_externalVelocity, Vector2.zero, _externalDecay * deltaTime);
             Rigidbody.linearVelocity = _movementVelocity + _externalVelocity;
-        }
-
-        private void ApplyPredictedPhysics(float deltaTime)
-        {
-            _externalVelocity = Vector2.Lerp(_externalVelocity, Vector2.zero, _externalDecay * deltaTime);
-            
-            Vector2 velocity = _movementVelocity + _externalVelocity;
-            
-            Rigidbody.position += velocity * deltaTime;
-            Rigidbody.linearVelocity = velocity;
         }
 
         private void ApplyInterpolatedPhysics(float deltaTime)
