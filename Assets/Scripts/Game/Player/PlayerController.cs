@@ -55,10 +55,6 @@ namespace Game.Player
             {
                 ApplyInterpolatedPhysics(Time.fixedDeltaTime);
             }
-            //else if (IsOwner)
-            //{
-            //    ApplyPredictedPhysics(Time.fixedDeltaTime);
-            //}
         }
 
         // ========== Public APIs ========== 
